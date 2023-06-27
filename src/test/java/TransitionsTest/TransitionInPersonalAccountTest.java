@@ -1,5 +1,7 @@
 package TransitionsTest;
 
+import clients.UserClient;
+import dataprovider.UserProvider;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Step;
 import org.junit.After;
@@ -13,15 +15,14 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import pageObject.HomePageStellarBurgers;
 import pageObject.LoginPageStellarBurgers;
 import pageObject.PersonalAccountPageStellarBurgers;
-import pageObject.RegisterPageStellarBurgers;
+import pojo.CreateUserRequest;
 
-import java.util.Random;
+import java.util.Objects;
 
 public class TransitionInPersonalAccountTest {
         private WebDriver driver;
-        private String email;
-        private String password;
-        private String name;
+        private UserClient userClient = new UserClient();
+        private String accessToken;
 
         @Before
         public void setUp() {
@@ -36,27 +37,20 @@ public class TransitionInPersonalAccountTest {
             ChromeDriverService service = new ChromeDriverService.Builder().build();
             this.driver = new ChromeDriver(service);
             */
-
-            //генерирование данных для регистрации и входа пользователя
-            Random random = new Random();
-            email = "tatmel" + random.nextInt(100000000) + "@yandex.ru";
-            name = "test";
-            password = "123456";
         }
 
         @Test
         @Step("Перейти в личный кабинет через кнопку 'Личный кабинет', авторизовавшись под пользователем")
         public void testClickPersonalAccountWithAuth() {
-            //переход на страницу регистрации
-            driver.get("https://stellarburgers.nomoreparties.site/register");
-
-            //объект класса страницы регистрации
-            RegisterPageStellarBurgers objRegisterPage = new RegisterPageStellarBurgers(driver);
-            //регистрация пользователя
-            objRegisterPage.register(name, email, password);
-            //вход пользователя
+            //создание пользователя
+            CreateUserRequest createUserRequest = UserProvider.getRandomCreateUserRequest();
+            accessToken = userClient.create(createUserRequest)
+                    .extract().jsonPath().get("accessToken");
+            //логин
+            driver.get("https://stellarburgers.nomoreparties.site/login");
             LoginPageStellarBurgers objLoginPage = new LoginPageStellarBurgers(driver);
-            objLoginPage.login(email, password);
+            objLoginPage.login(createUserRequest.getEmail(), createUserRequest.getPassword());
+
             //проверка клика по кнопке личный кабинет
             HomePageStellarBurgers objHomePage = new HomePageStellarBurgers(driver);
             objHomePage.clickButtonPersonalAccount();
@@ -83,9 +77,16 @@ public class TransitionInPersonalAccountTest {
             String expected = "https://stellarburgers.nomoreparties.site/login";
             Assert.assertEquals("Ошибка: пользователь НЕ находится на странице входа", expected, actual);
         }
-
         @After
         public void teardown() {
+
+            //удалить пользователя
+            if( !(Objects.equals(accessToken, null)) && !(Objects.equals(accessToken, "")) ) {
+                userClient.delete(accessToken)
+                        .statusCode(202);
+            }
+
+            //закрыть страницу
             driver.quit();
         }
 }

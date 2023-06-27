@@ -1,5 +1,7 @@
 package TransitionsTest;
 
+import clients.UserClient;
+import dataprovider.UserProvider;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Step;
 import org.junit.After;
@@ -13,15 +15,14 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import pageObject.HomePageStellarBurgers;
 import pageObject.LoginPageStellarBurgers;
 import pageObject.PersonalAccountPageStellarBurgers;
-import pageObject.RegisterPageStellarBurgers;
+import pojo.CreateUserRequest;
 
-import java.util.Random;
+import java.util.Objects;
 
 public class TransitionFromPersonalAccountToConstructorTest {
         private WebDriver driver;
-        private String email;
-        private String password;
-        private String name;
+        private UserClient userClient = new UserClient();
+        private String accessToken;
 
         @Before
         public void setUp() {
@@ -37,17 +38,15 @@ public class TransitionFromPersonalAccountToConstructorTest {
             this.driver = new ChromeDriver(service);
             */
 
-            //регистрация пользователя
-            driver.get("https://stellarburgers.nomoreparties.site/register");
-            RegisterPageStellarBurgers objRegisterPage = new RegisterPageStellarBurgers(driver);
-            Random random = new Random();
-            email = "tatmel" + random.nextInt(100000000) + "@yandex.ru";
-            name = "test";
-            password = "123456";
-            objRegisterPage.register(name, email, password);
+            //создание пользователя
+            CreateUserRequest createUserRequest = UserProvider.getRandomCreateUserRequest();
+            accessToken = userClient.create(createUserRequest)
+                    .extract().jsonPath().get("accessToken");
+
             //логин
+            driver.get("https://stellarburgers.nomoreparties.site/login");
             LoginPageStellarBurgers objLoginPage = new LoginPageStellarBurgers(driver);
-            objLoginPage.login(email, password);
+            objLoginPage.login(createUserRequest.getEmail(), createUserRequest.getPassword());
 
             //переход в личный кабинет
             HomePageStellarBurgers objHomePage = new HomePageStellarBurgers(driver);
@@ -77,6 +76,14 @@ public class TransitionFromPersonalAccountToConstructorTest {
         }
         @After
         public void teardown() {
+
+            //удалить пользователя
+            if( !(Objects.equals(accessToken, null)) && !(Objects.equals(accessToken, "")) ) {
+                userClient.delete(accessToken)
+                        .statusCode(202);
+            }
+
+            //закрыть страницу
             driver.quit();
         }
 }

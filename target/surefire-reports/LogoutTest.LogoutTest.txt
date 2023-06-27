@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: LogoutTest.LogoutTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.184 s - in LogoutTest.LogoutTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.543 s - in LogoutTest.LogoutTest

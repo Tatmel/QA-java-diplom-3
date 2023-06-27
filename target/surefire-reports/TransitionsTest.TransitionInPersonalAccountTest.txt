@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: TransitionsTest.TransitionInPersonalAccountTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.459 s - in TransitionsTest.TransitionInPersonalAccountTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.119 s - in TransitionsTest.TransitionInPersonalAccountTest

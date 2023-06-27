@@ -1,5 +1,7 @@
 package RegistrationTest;
 
+import clients.UserClient;
+import dataprovider.UserProvider;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.Step;
 import org.junit.After;
@@ -13,12 +15,17 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import pageObject.RegisterPageStellarBurgers;
+import pojo.CreateUserRequest;
+import pojo.LoginUserRequest;
 
+import java.util.Objects;
 import java.util.Random;
 
 @RunWith(Parameterized.class)
 public class SuccessfulRegistrationTest {
         private WebDriver driver;
+        private UserClient userClient = new UserClient();
+        private String accessToken;
 
         @Before
         public void setUp() {
@@ -69,6 +76,7 @@ public class SuccessfulRegistrationTest {
 
             //зарегистрировать пользователя
             objRegisterPage.register(name, email, password);
+
             //убедиться, что пользователь успешно зарегистрирован
             driver.get("https://stellarburgers.nomoreparties.site/register");
             objRegisterPage.register(name, email, password);
@@ -80,6 +88,21 @@ public class SuccessfulRegistrationTest {
 
         @After
         public void teardown() {
+
+            //получить токен для удаления пользователя
+            CreateUserRequest createUserRequest = UserProvider.getDataCreatedUser(email, password, name);
+            LoginUserRequest loginUserRequest = LoginUserRequest.from(createUserRequest);
+            accessToken = userClient.login(loginUserRequest)
+                    .statusCode(200)
+                    .extract().jsonPath().get("accessToken");
+
+            //удалить пользователя
+            if( !(Objects.equals(accessToken, null)) && !(Objects.equals(accessToken, "")) ) {
+                userClient.delete(accessToken)
+                        .statusCode(202);
+            }
+
+            //закрыть страницу
             driver.quit();
         }
 }

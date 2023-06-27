@@ -62,10 +62,12 @@ _**Протестировать:**_
 В проекте были использованы следующие фреймворки/библиотеки:
 * Java 11,
 * JUnit 4.13.2,
-* selenium-java 3.141.59
-* webdrivermanager 4.4.3
+* selenium-java 3.141.59,
+* webdrivermanager 4.4.3,
 * Allure-junit4 2.22.0,
-* Aspectj 1.9.7
+* Aspectj 1.9.7,
+* RestAssured 5.3.0,
+* GSON 2.10.1
 
 <p align="right">(<a href="#project-name">back to top</a>)</p>
 
